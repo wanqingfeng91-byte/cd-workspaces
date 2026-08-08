@@ -30,7 +30,8 @@ securityContext: {}
 service:
   type: ClusterIP
   # This sets the orts more information can be found here: https://kubernetes.io/docs/concepts/services-networking/service/#field-spec-ports
-  port: 80
+  # port: 80
+  port: 9411
 
 ingress:
   enabled: false
