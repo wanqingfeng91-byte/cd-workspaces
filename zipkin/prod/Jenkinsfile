@@ -28,7 +28,7 @@ pipeline {
         stage('Deploy to ACK Prod') {
             steps {
                 sh """
-                    # 执行部署：匹配 .Values.httpRoute (大写 R) 模板语法
+                    # 执行部署：通过 --set-json 将 hostnames 覆盖为空数组，通配所有域名与 ALB CNAME
                     \${HELM_PETCLINIC_PROD_BIN} upgrade --install ${RELEASE_NAME} ${CHART_NAME} \\
                       --namespace ${NAMESPACE} \\
                       -f ${VALUES_FILE} \\
@@ -37,6 +37,7 @@ pipeline {
                       --set service.port=${params.SERVICE_PORT} \\
                       --set httpRoute.enabled=${params.ENABLE_HTTPROUTE} \\
                       --set httpRoute.parentRefs[0].name=${params.GATEWAY_NAME} \\
+                      --set-json 'httpRoute.hostnames=[]' \\
                       --set 'httpRoute.rules[0].matches[0].path.type=PathPrefix' \\
                       --set 'httpRoute.rules[0].matches[0].path.value=/' \\
                       --wait \\
