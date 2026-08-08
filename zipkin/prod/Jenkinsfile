@@ -71,6 +71,7 @@ pipeline {
         stage('Deploy to ACK Prod') {
             steps {
                 sh '''
+                    pwd && ls -l
                     # 使用 -f 指定 values.yaml 进行部署
                     ${HELM_PETCLINIC_PROD_BIN} upgrade --install ${RELEASE_NAME} ${CHART_NAME} \
                       --namespace ${NAMESPACE} \
