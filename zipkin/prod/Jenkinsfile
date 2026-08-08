@@ -1,8 +1,9 @@
 pipeline {
     agent any
 
-    // 1. 添加参数配置，接收 CI 传递过来的 TAG
+    // 1. 同时接收 REPOSITORY 和 TAG 两个参数
     parameters {
+        string(name: 'REPOSITORY', defaultValue: 'jasonops/petclinic', description: '镜像仓库地址')
         string(name: 'TAG', defaultValue: 'latest', description: '镜像 Tag')
     }
 
@@ -24,12 +25,13 @@ pipeline {
 
         stage('Deploy to ACK Prod') {
             steps {
-                // 2. 将单引号 ''' 改为双引号 """，以便解析 ${params.TAG}
+                // 2. 在 Helm 命令里增加 --set image.repository
                 sh """
-                    # 执行部署：-f 加载基础配置，--set 动态覆盖镜像 Tag
+                    # 执行部署：同时动态覆盖镜像仓库和 Tag
                     \${HELM_PETCLINIC_PROD_BIN} upgrade --install ${RELEASE_NAME} ${CHART_NAME} \\
                       --namespace ${NAMESPACE} \\
                       -f ${VALUES_FILE} \\
+                      --set image.repository=${params.REPOSITORY} \\
                       --set image.tag=${params.TAG}
                 """
             }
@@ -37,7 +39,7 @@ pipeline {
     }
 
     post {
-        success { echo "Helm Release ${RELEASE_NAME} (Tag: ${params.TAG}) 部署成功！" }
+        success { echo "Helm Release ${RELEASE_NAME} (${params.REPOSITORY}:${params.TAG}) 部署成功！" }
         failure { echo "Helm Release ${RELEASE_NAME} 部署失败，请检查构建日志。" }
     }
 }
