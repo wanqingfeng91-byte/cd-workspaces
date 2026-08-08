@@ -75,15 +75,15 @@ resources:
 
 livenessProbe:
   httpGet:
-    path: /actuator/health/liveness
+    path: /livez
     port: http
 readinessProbe:
   httpGet:
-    path: /actuator/health/readiness
+    path: /readyz
     port: http
 startupProbe:
   httpGet:
-    path: /actuator/health/liveness
+    path: /livez
     port: http
   initialDelaySeconds: 15  # 容器启动 15 秒后再开始检测
   periodSeconds: 5
