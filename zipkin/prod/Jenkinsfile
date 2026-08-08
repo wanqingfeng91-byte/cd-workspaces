@@ -1,12 +1,55 @@
+// pipeline {
+//     agent any
+
+//     environment {
+//         RELEASE_NAME = 'mychart'
+//         CHART_NAME   = 'petclinic/generic-deployment'
+//         NAMESPACE    = 'default'
+//         // 修改这里的相对路径，指向具体的子目录
+//         VALUES_FILE  = 'zipkin/prod/values.yaml' 
+//     }
+
+//     stages {
+//         stage('Helm Repo Update') {
+//             steps {
+//                 sh '''
+//                     ${HELM_PETCLINIC_PROD_BIN} repo update
+//                 '''
+//             }
+//         }
+
+//         stage('Deploy to ACK Prod') {
+//             steps {
+//                 sh '''
+//                     # 执行部署
+//                     ${HELM_PETCLINIC_PROD_BIN} upgrade --install ${RELEASE_NAME} ${CHART_NAME} \
+//                       --namespace ${NAMESPACE} \
+//                       -f ${VALUES_FILE}
+//                 '''
+//             }
+//         }
+//     }
+
+//     post {
+//         success { echo "Helm Release ${RELEASE_NAME} 部署成功！" }
+//         failure { echo "Helm Release ${RELEASE_NAME} 部署失败，请检查构建日志。" }
+//     }
+// }
+
+
 pipeline {
     agent any
+
+    // 1. 添加参数配置，接收 CI 传递过来的 TAG
+    parameters {
+        string(name: 'TAG', defaultValue: 'latest', description: '镜像 Tag')
+    }
 
     environment {
         RELEASE_NAME = 'mychart'
         CHART_NAME   = 'petclinic/generic-deployment'
         NAMESPACE    = 'default'
-        // 修改这里的相对路径，指向具体的子目录
-        VALUES_FILE  = 'zipkin/prod/values.yaml' 
+        VALUES_FILE  = 'zipkin/prod/values.yaml'
     }
 
     stages {
@@ -20,18 +63,20 @@ pipeline {
 
         stage('Deploy to ACK Prod') {
             steps {
-                sh '''
-                    # 执行部署
-                    ${HELM_PETCLINIC_PROD_BIN} upgrade --install ${RELEASE_NAME} ${CHART_NAME} \
-                      --namespace ${NAMESPACE} \
-                      -f ${VALUES_FILE}
-                '''
+                // 2. 将单引号 ''' 改为双引号 """，以便解析 ${params.TAG}
+                sh """
+                    # 执行部署：-f 加载基础配置，--set 动态覆盖镜像 Tag
+                    \${HELM_PETCLINIC_PROD_BIN} upgrade --install ${RELEASE_NAME} ${CHART_NAME} \\
+                      --namespace ${NAMESPACE} \\
+                      -f ${VALUES_FILE} \\
+                      --set image.tag=${params.TAG}
+                """
             }
         }
     }
 
     post {
-        success { echo "Helm Release ${RELEASE_NAME} 部署成功！" }
+        success { echo "Helm Release ${RELEASE_NAME} (Tag: ${params.TAG}) 部署成功！" }
         failure { echo "Helm Release ${RELEASE_NAME} 部署失败，请检查构建日志。" }
     }
 }
