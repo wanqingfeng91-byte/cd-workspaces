@@ -1,11 +1,61 @@
+// pipeline {
+//     agent any
+
+//     environment {
+//         // 部署参数配置
+//         RELEASE_NAME = 'mychart'
+//         CHART_NAME   = 'petclinic/generic-deployment'  // 直接使用已配置好的仓库名/Chart
+//         NAMESPACE    = 'default'
+//     }
+
+//     stages {
+//         stage('Helm Repo Update') {
+//             steps {
+//                 sh '''
+//                     # 仅刷新本地 Chart 索引库
+//                     ${HELM_PETCLINIC_PROD_BIN} repo update
+//                 '''
+//             }
+//         }
+
+//         stage('Deploy to ACK Prod') {
+//             steps {
+//                 sh '''
+//                     # 使用已配置的环境变量部署至 ACK 生产集群
+//                     ${HELM_PETCLINIC_PROD_BIN} upgrade --install ${RELEASE_NAME} ${CHART_NAME} \
+//                       --namespace ${NAMESPACE} \
+//                       --set image.repository=openzipkin/zipkin \
+//                       --set image.tag=latest \
+//                       --set service.port=9411 \
+//                       --set httpRoute.enabled=true \
+//                       --set httpRoute.parentRefs[0].name=zipkin-gateway \
+//                       --set httpRoute.hostnames=null \
+//                       --set 'httpRoute.rules[0].matches[0].path.type=PathPrefix' \
+//                       --set 'httpRoute.rules[0].matches[0].path.value=/'
+//                 '''
+//             }
+//         }
+//     }
+
+//     post {
+//         success {
+//             echo "Helm Release ${RELEASE_NAME} 部署成功！"
+//         }
+//         failure {
+//             echo "Helm Release ${RELEASE_NAME} 部署失败，请检查构建日志。"
+//         }
+//     }
+// }
+
 pipeline {
     agent any
 
     environment {
         // 部署参数配置
         RELEASE_NAME = 'mychart'
-        CHART_NAME   = 'petclinic/generic-deployment'  // 直接使用已配置好的仓库名/Chart
+        CHART_NAME   = 'petclinic/generic-deployment'
         NAMESPACE    = 'default'
+        VALUES_FILE  = 'values.yaml' // 相对工作区根目录的路径
     }
 
     stages {
@@ -21,17 +71,10 @@ pipeline {
         stage('Deploy to ACK Prod') {
             steps {
                 sh '''
-                    # 使用已配置的环境变量部署至 ACK 生产集群
+                    # 使用 -f 指定 values.yaml 进行部署
                     ${HELM_PETCLINIC_PROD_BIN} upgrade --install ${RELEASE_NAME} ${CHART_NAME} \
                       --namespace ${NAMESPACE} \
-                      --set image.repository=openzipkin/zipkin \
-                      --set image.tag=latest \
-                      --set service.port=9411 \
-                      --set httpRoute.enabled=true \
-                      --set httpRoute.parentRefs[0].name=zipkin-gateway \
-                      --set httpRoute.hostnames=null \
-                      --set 'httpRoute.rules[0].matches[0].path.type=PathPrefix' \
-                      --set 'httpRoute.rules[0].matches[0].path.value=/'
+                      -f ${VALUES_FILE}
                 '''
             }
         }
