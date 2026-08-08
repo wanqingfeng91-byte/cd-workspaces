@@ -76,15 +76,15 @@ resources:
 
 livenessProbe:
   httpGet:
-    path: /livez
+    path: /
     port: http
 readinessProbe:
   httpGet:
-    path: /readyz
+    path: /
     port: http
 startupProbe:
   httpGet:
-    path: /livez
+    path: /
     port: http
   initialDelaySeconds: 15  # 容器启动 15 秒后再开始检测
   periodSeconds: 5
