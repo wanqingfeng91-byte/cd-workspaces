@@ -30,7 +30,8 @@ pipeline {
         stage('Deploy to ACK Prod') {
             steps {
                 script {
-                    def cmd = "${HELM_BIN} upgrade --install ${HELM_RELEASE_NAME} ${HELM_CHART_NAME} --namespace ${HELM_NAMESPACE} -f ${VALUE_FILE_PATH} --set image.tag=${HELM_RELEASE_NAME}-${params.tag} --wait --timeout 5m"
+                    def helmInstallCmd = "${HELM_BIN} upgrade --install ${HELM_RELEASE_NAME} ${HELM_CHART_NAME} --namespace ${HELM_NAMESPACE} -f ${VALUE_FILE_PATH} --set image.tag=${HELM_RELEASE_NAME}-${params.tag} --wait --timeout 5m"
+                    echo "CMD: ${helmInstallCmd}"
                     if (sh(returnStatus: true, script: cmd) != 0) {
                         sh "${HELM_BIN} rollback ${HELM_RELEASE_NAME} --namespace ${HELM_NAMESPACE}"
                         error "Helm deploy failed, rollback done."
