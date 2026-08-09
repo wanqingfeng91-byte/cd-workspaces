@@ -15,7 +15,7 @@ pipeline {
         RELEASE_NAME = 'mychart'
         CHART_NAME   = 'petclinic/generic-deployment'
         NAMESPACE    = 'default'
-        VALUES_FILE  = 'zipkin/prod/values.yaml'
+        VALUES_FILE  = 'spring-petclinic/prod/values.yaml'
     }
 
     stages {
