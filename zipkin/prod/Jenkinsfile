@@ -1,6 +1,7 @@
 pipeline {
     agent any
 
+    // 参数化
     parameters {
         string(name: 'REPOSITORY', defaultValue: 'contrastsecuritydemo/spring-petclinic', description: '镜像仓库地址')
         string(name: 'TAG', defaultValue: '1.5.1', description: '镜像 Tag')
@@ -9,6 +10,7 @@ pipeline {
         string(name: 'GATEWAY_NAME', defaultValue: 'springboot-gateway', description: '绑定 Gateway 名称')
     }
 
+    // 全局变量
     environment {
         RELEASE_NAME = 'mychart'
         CHART_NAME   = 'petclinic/generic-deployment'
@@ -20,7 +22,7 @@ pipeline {
         stage('Helm Repo Update') {
             steps {
                 sh '''
-                    ${HELM_PETCLINIC_PROD_BIN} repo update
+                    ${HELM_ACK_PROD_BIN} repo update
                 '''
             }
         }
@@ -29,7 +31,7 @@ pipeline {
             steps {
                 sh """
                     # 执行部署：通过 --set-json 将 hostnames 覆盖为空数组，通配所有域名与 ALB CNAME
-                    \${HELM_PETCLINIC_PROD_BIN} upgrade --install ${RELEASE_NAME} ${CHART_NAME} \\
+                    \${HELM_ACK_PROD_BIN} upgrade --install ${RELEASE_NAME} ${CHART_NAME} \\
                       --namespace ${NAMESPACE} \\
                       -f ${VALUES_FILE} \\
                       --set-string image.repository=${params.REPOSITORY} \\
