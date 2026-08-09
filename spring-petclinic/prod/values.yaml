@@ -68,11 +68,11 @@ httpRoute:
 
 resources: 
   limits:
-    cpu: 1000m
-    memory: 2048Mi
+    cpu: 500m
+    memory: 1024Mi
   requests:
-    cpu: 1000m
-    memory: 2048Mi
+    cpu: 500m
+    memory: 1024Mi
 
 livenessProbe:
   httpGet:
