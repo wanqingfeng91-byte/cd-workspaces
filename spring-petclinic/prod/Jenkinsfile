@@ -14,7 +14,7 @@ pipeline {
     environment {
         RELEASE_NAME = 'spring-petclinic-release'
         CHART_NAME   = 'petclinic/generic-deployment'
-        NAMESPACE    = 'default'
+        NAMESPACE    = 'spring'
         VALUES_FILE  = 'spring-petclinic/prod/values.yaml'
     }
 
