@@ -12,7 +12,7 @@ pipeline {
 
     // 全局变量
     environment {
-        RELEASE_NAME = 'mychart'
+        RELEASE_NAME = 'spring-petclinic-release'
         CHART_NAME   = 'petclinic/generic-deployment'
         NAMESPACE    = 'default'
         VALUES_FILE  = 'spring-petclinic/prod/values.yaml'
