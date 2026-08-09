@@ -29,24 +29,35 @@ pipeline {
 
         stage('Deploy to ACK Prod') {
             steps {
-                sh """
-                    # 执行部署：通过 --set-json 将 hostnames 覆盖为空数组，通配所有域名与 ALB CNAME
-                    \${HELM_ACK_PROD_BIN} upgrade --install ${RELEASE_NAME} ${CHART_NAME} \\
-                      --namespace ${NAMESPACE} \\
-                      -f ${VALUES_FILE} \\
-                      --set-string image.repository=${params.REPOSITORY} \\
-                      --set-string image.tag=${params.TAG} \\
-                      --set service.port=${params.SERVICE_PORT} \\
-                      --set httpRoute.enabled=${params.ENABLE_HTTPROUTE} \\
-                      --set httpRoute.parentRefs[0].name=${params.GATEWAY_NAME} \\
-                      --set-json 'httpRoute.hostnames=[]' \\
-                      --set 'httpRoute.rules[0].matches[0].path.type=PathPrefix' \\
-                      --set 'httpRoute.rules[0].matches[0].path.value=/' \\
-                      --wait \\
-                      --timeout 5m
-                """
+                script {
+                    def cmd = "${HELM_BIN} upgrade --install ${HELM_RELEASE_NAME} ${HELM_CHART_NAME} --namespace ${HELM_NAMESPACE} -f ${VALUE_FILE_PATH} --set image.tag=${HELM_RELEASE_NAME}-${params.tag} --wait --timeout 5m"
+                    if (sh(returnStatus: true, script: cmd) != 0) {
+                        sh "${HELM_BIN} rollback ${HELM_RELEASE_NAME} --namespace ${HELM_NAMESPACE}"
+                        error "Helm deploy failed, rollback done."
+                    }
+                }
             }
         }
+        // stage('Deploy to ACK Prod') {
+        //     steps {
+        //         sh """
+        //             # 执行部署：通过 --set-json 将 hostnames 覆盖为空数组，通配所有域名与 ALB CNAME
+        //             \${HELM_ACK_PROD_BIN} upgrade --install ${RELEASE_NAME} ${CHART_NAME} \\
+        //               --namespace ${NAMESPACE} \\
+        //               -f ${VALUES_FILE} \\
+        //               --set-string image.repository=${params.REPOSITORY} \\
+        //               --set-string image.tag=${params.TAG} \\
+        //               --set service.port=${params.SERVICE_PORT} \\
+        //               --set httpRoute.enabled=${params.ENABLE_HTTPROUTE} \\
+        //               --set httpRoute.parentRefs[0].name=${params.GATEWAY_NAME} \\
+        //               --set-json 'httpRoute.hostnames=[]' \\
+        //               --set 'httpRoute.rules[0].matches[0].path.type=PathPrefix' \\
+        //               --set 'httpRoute.rules[0].matches[0].path.value=/' \\
+        //               --wait \\
+        //               --timeout 5m
+        //         """
+        //     }
+        // }
     }
 
     post {
