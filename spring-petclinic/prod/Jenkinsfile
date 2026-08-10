@@ -30,43 +30,25 @@ pipeline {
         stage('Deploy to ACK Prod') {
             steps {
                 script {
-                    def helmInstallCmd = "${HELM_BIN} upgrade --install ${HELM_RELEASE_NAME} ${HELM_CHART_NAME} --namespace ${HELM_NAMESPACE} -f ${VALUE_FILE_PATH} --set image.tag=${HELM_RELEASE_NAME}-${params.tag} --wait --timeout 5m"
+                    // 使用 env. 显式读取环境变量，并纠正变量名与参数大小写
+                    def helmInstallCmd = "${env.HELM_ACK_PROD_BIN} upgrade --install ${env.RELEASE_NAME} ${env.CHART_NAME} --namespace ${env.NAMESPACE} -f ${env.VALUES_FILE} --set image.repository=${params.REPOSITORY} --set image.tag=${params.TAG} --wait --timeout 5m"
                     echo "CMD: ${helmInstallCmd}"
-                    if (sh(returnStatus: true, script: cmd) != 0) {
-                        sh "${HELM_BIN} rollback ${HELM_RELEASE_NAME} --namespace ${HELM_NAMESPACE}"
+                    
+                    if (sh(returnStatus: true, script: helmInstallCmd) != 0) {
+                        sh "${env.HELM_ACK_PROD_BIN} rollback ${env.RELEASE_NAME} --namespace ${env.NAMESPACE}"
                         error "Helm deploy failed, rollback done."
                     }
                 }
             }
         }
-        // stage('Deploy to ACK Prod') {
-        //     steps {
-        //         sh """
-        //             # 执行部署：通过 --set-json 将 hostnames 覆盖为空数组，通配所有域名与 ALB CNAME
-        //             \${HELM_ACK_PROD_BIN} upgrade --install ${RELEASE_NAME} ${CHART_NAME} \\
-        //               --namespace ${NAMESPACE} \\
-        //               -f ${VALUES_FILE} \\
-        //               --set-string image.repository=${params.REPOSITORY} \\
-        //               --set-string image.tag=${params.TAG} \\
-        //               --set service.port=${params.SERVICE_PORT} \\
-        //               --set httpRoute.enabled=${params.ENABLE_HTTPROUTE} \\
-        //               --set httpRoute.parentRefs[0].name=${params.GATEWAY_NAME} \\
-        //               --set-json 'httpRoute.hostnames=[]' \\
-        //               --set 'httpRoute.rules[0].matches[0].path.type=PathPrefix' \\
-        //               --set 'httpRoute.rules[0].matches[0].path.value=/' \\
-        //               --wait \\
-        //               --timeout 5m
-        //         """
-        //     }
-        // }
     }
 
     post {
         success { 
-            echo "Helm Release ${RELEASE_NAME} (${params.REPOSITORY}:${params.TAG}) 部署并通过健康检查！" 
+            echo "Helm Release ${env.RELEASE_NAME} (${params.REPOSITORY}:${params.TAG}) 部署并通过健康检查！" 
         }
         failure { 
-            echo "Helm Release ${RELEASE_NAME} 部署失败（或 Pod 未就绪），请检查构建日志。" 
+            echo "Helm Release ${env.RELEASE_NAME} 部署失败（或 Pod 未就绪），请检查构建日志。" 
         }
     }
 }
