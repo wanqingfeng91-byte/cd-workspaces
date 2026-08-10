@@ -90,12 +90,12 @@ startupProbe:
   failureThreshold: 12     # 允许尝试 12 次（给足约 75 秒启动窗口）
 
 command: 
-# - java
+- java
 
 args: 
-# - -jar
-# - /app/app.jar
-# - --spring.profiles.active=prod
+- -jar
+- /app/app.jar
+- --spring.profiles.active=prod
 
 autoscaling:
   enabled: false
