@@ -59,7 +59,7 @@ httpRoute:
   - name: springboot-gateway
     sectionName: http
   hostnames:
-  - ""
+  - []
   rules:
   - matches:
     - path:
