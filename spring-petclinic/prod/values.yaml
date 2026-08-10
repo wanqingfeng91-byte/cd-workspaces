@@ -63,7 +63,7 @@ httpRoute:
   - matches:
     - path:
         type: PathPrefix
-        value: /headers
+        value: /
 
 resources: 
   limits:
