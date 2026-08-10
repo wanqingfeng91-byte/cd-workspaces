@@ -56,10 +56,10 @@ httpRoute:
   enabled: true
   annotations: {}
   parentRefs:
-  - name: gateway
+  - name: springboot-gateway
     sectionName: http
   hostnames:
-  - chart-example.local
+  - ""
   rules:
   - matches:
     - path:
