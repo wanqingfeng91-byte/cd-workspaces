@@ -58,8 +58,7 @@ httpRoute:
   parentRefs:
   - name: springboot-gateway
     sectionName: http
-  hostnames:
-  - []
+  hostnames: []
   rules:
   - matches:
     - path:
