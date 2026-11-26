@@ -1,0 +1,42 @@
+
+pipeline {
+    agent any
+
+    options {
+        timestamps()
+        disableConcurrentBuilds()
+    }
+
+    environment {
+        HELM_RELEASE_NAME = 'webapp-dev'
+        HELM_CHART_VERSION = '0.1.0'
+        HELM_NAMESPACE = 'dev'
+        VALUE_FILE_PATH = 'values-dev.yaml'
+    }
+
+    stages {
+        stage('Deploy') {
+            steps {
+                script {
+                    echo "Starting Helm deployment..."
+
+                    def helmInstallCmd = "${HELM_BIN} upgrade --install ${HELM_RELEASE_NAME} ${HELM_CHART_NAME} --kubeconfig ${KUBECONFIG} --version ${HELM_CHART_VERSION} --namespace ${HELM_NAMESPACE} --create-namespace -f ${VALUE_FILE_PATH} --wait --timeout 5m"
+
+                    echo "CMD: ${helmInstallCmd}"
+
+                    def helmInstallStatus = sh(returnStatus: true, script: helmInstallCmd)
+
+                    if (helmInstallStatus == 0) {
+                        echo "HELM chart installed successfully."
+                    } else {
+                        echo "HELM chart installation failed. Performing rollback..."
+
+                        sh(returnStatus: true, script: "${HELM_BIN} rollback ${HELM_RELEASE_NAME} --kubeconfig ${KUBECONFIG} --namespace ${HELM_NAMESPACE} --wait --timeout 5m")
+
+                        error("Helm deployment failed.")
+                    }
+                }
+            }
+        }
+    }
+}
