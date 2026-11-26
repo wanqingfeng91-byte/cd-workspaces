@@ -1,4 +1,3 @@
-
 pipeline {
     agent any
 
@@ -11,7 +10,8 @@ pipeline {
         HELM_RELEASE_NAME = 'webapp-dev'
         HELM_CHART_VERSION = '0.1.0'
         HELM_NAMESPACE = 'dev'
-        VALUE_FILE_PATH = 'values-dev.yaml'
+        HELM_CHART_NAME = 'oci://harbor.q6w2r9e.com/helm-charts/microservice'
+        VALUE_FILE_PATH = 'demo/dev/webapp-dev/value.yaml'
     }
 
     stages {
@@ -20,7 +20,7 @@ pipeline {
                 script {
                     echo "Starting Helm deployment..."
 
-                    def helmInstallCmd = "${HELM_BIN} upgrade --install ${HELM_RELEASE_NAME} ${HELM_CHART_NAME} --kubeconfig ${KUBECONFIG} --version ${HELM_CHART_VERSION} --namespace ${HELM_NAMESPACE} --create-namespace -f ${VALUE_FILE_PATH} --wait --timeout 5m"
+                    def helmInstallCmd = "${HELM_BIN} upgrade --install ${HELM_RELEASE_NAME} ${HELM_CHART_NAME} --kubeconfig ${KUBECONFIG} --version ${HELM_CHART_VERSION} --namespace ${HELM_NAMESPACE} --create-namespace -f ${VALUE_FILE_PATH} --atomic --wait --timeout 5m"
 
                     echo "CMD: ${helmInstallCmd}"
 
@@ -29,10 +29,6 @@ pipeline {
                     if (helmInstallStatus == 0) {
                         echo "HELM chart installed successfully."
                     } else {
-                        echo "HELM chart installation failed. Performing rollback..."
-
-                        sh(returnStatus: true, script: "${HELM_BIN} rollback ${HELM_RELEASE_NAME} --kubeconfig ${KUBECONFIG} --namespace ${HELM_NAMESPACE} --wait --timeout 5m")
-
                         error("Helm deployment failed.")
                     }
                 }
