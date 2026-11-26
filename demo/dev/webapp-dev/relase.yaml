@@ -1,0 +1,126 @@
+ingress:
+  enabled: true
+  className: alb
+  annotations:
+    # 健康检查
+    alb.ingress.kubernetes.io/healthcheck-enabled: "true"
+    alb.ingress.kubernetes.io/healthcheck-protocol: "HTTP"
+    alb.ingress.kubernetes.io/healthcheck-method: "GET"
+    alb.ingress.kubernetes.io/healthcheck-path: "/health"
+    alb.ingress.kubernetes.io/healthcheck-httpversion: "HTTP1.1"
+    alb.ingress.kubernetes.io/healthcheck-code: "http_2xx"
+    alb.ingress.kubernetes.io/healthcheck-timeout-seconds: "5"
+    alb.ingress.kubernetes.io/healthcheck-interval-seconds: "5"
+    alb.ingress.kubernetes.io/healthy-threshold-count: "3"
+    alb.ingress.kubernetes.io/unhealthy-threshold-count: "3"
+
+  hosts:
+    - host: ""
+      paths:
+        - path: /
+          pathType: Prefix
+  tls: []
+
+# Pod 副本数量
+replicaCount: 5
+
+# 自动扩缩容配置（HPA）
+autoscaling:
+  enabled: false
+
+# 容器镜像配置
+image:
+  repository: traefik/whoami            # 镜像仓库及名称
+  pullPolicy: IfNotPresent              # 镜像拉取策略：Always / IfNotPresent / Never
+  tag: "latest"                         # 镜像版本标签
+
+# 私有镜像仓库认证 Secret
+imagePullSecrets: []
+# 示例：
+# imagePullSecrets:
+#   - name: acr-credential-secret
+
+# Pod 自定义注解
+podAnnotations: {}
+
+# Pod 自定义标签
+podLabels: {}
+
+# Pod 安全上下文（作用于整个 Pod）
+podSecurityContext: {}
+
+# 容器安全上下文（作用于单个容器）
+securityContext: {}
+
+# 容器端口配置
+container:
+  name: http       # 容器端口名称，可供 Service 和 Probe 引用
+  port: 80         # 容器监听端口
+  protocol: TCP    # 端口协议：TCP / UDP / SCTP
+
+# Kubernetes Service 配置
+service:
+  type: ClusterIP   # Service 类型：ClusterIP / NodePort / LoadBalancer
+  port: 80          # Service 对外提供的端口
+  targetPort: 80    # 转发到容器的目标端口
+
+# 探针总开关
+probes:
+  enabled: true
+
+# 启动探针
+startupProbe:
+  enabled: true
+  httpGet:
+    path: /health
+    port: 80
+  periodSeconds: 2
+  timeoutSeconds: 1
+  failureThreshold: 15
+
+# 存活探针
+livenessProbe:
+  enabled: true
+  httpGet:
+    path: /health
+    port: 80
+  periodSeconds: 10
+  timeoutSeconds: 2
+  failureThreshold: 3
+
+# 就绪探针
+readinessProbe:
+  enabled: true
+  httpGet:
+    path: /health
+    port: 80
+  periodSeconds: 5
+  timeoutSeconds: 2
+  failureThreshold: 2
+
+# 容器资源配置
+resources:
+  requests:
+    cpu: 200m       # CPU 资源请求
+    memory: 256Mi   # 内存资源请求
+  limits:
+    cpu: 1000m      # CPU 资源上限
+    memory: 1Gi     # 内存资源上限
+
+# Pod 存储卷配置
+volumes: []
+
+# 容器存储卷挂载配置
+volumeMounts: []
+
+# Pod 节点选择器
+# 用于指定 Pod 调度到符合标签条件的节点
+nodeSelector: {}
+
+# Pod 亲和性与反亲和性
+# 用于控制 Pod 与其他 Pod 或节点之间的调度关系
+affinity: {}
+
+# 节点污点容忍配置
+# 允许 Pod 调度到具有匹配污点的节点
+tolerations: []
