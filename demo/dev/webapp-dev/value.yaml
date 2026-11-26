@@ -22,7 +22,7 @@ ingress:
   tls: []
 
 # Pod 副本数量
-replicaCount: 5
+replicaCount: 10
 
 # 自动扩缩容配置（HPA）
 autoscaling:
